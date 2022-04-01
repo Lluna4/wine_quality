@@ -2,6 +2,8 @@ import sklearn
 import numpy as np
 import pandas as pd
 from sklearn import linear_model
+from sklearn.neural_network import MLPClassifier
+from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 import pickle
 
@@ -12,21 +14,31 @@ a.drop(["fixed acidity", "density", "chlorides", "free sulfur dioxide", "residua
 x = np.array(a.drop(['quality'], axis=1))
 y = np.array(a['quality'])
 prec = []
-for i in range(100):
-    X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(x, y, test_size=0.1)
+best = 0
 
+for i in range(10):
+    x_train, x_test, y_train, y_test = sklearn.model_selection.train_test_split(x, y, test_size=0.1)
+    clf = MLPClassifier(hidden_layer_sizes=(25, 12, 6), max_iter=1000).fit(x_train, y_train)
+    
+    prec.append(clf.score(x_test, y_test))
+    if clf.score(x_test, y_test) > best:
+        best = clf.score(x_test, y_test)
+        with open('model.pkl', 'wb') as f:
+            pickle.dump(clf, f)
 
-    linear = linear_model.LinearRegression()
-    linear.fit(X_train, y_train)
-    precision = linear.score(X_test, y_test)
-    print(precision)
-    prec.append(precision)
-    if precision >= 0.367:
-        with open("model.pickle", "wb") as f:
-            pickle.dump(linear, f)
+x = np.arange(10)
 
-y = np.arange(0, len(prec))
-
-plt.plot(y, prec)
+plt.plot(x, prec)
 plt.show()
+"""
+X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(x, y, test_size=0.1)
+
+
+linear = MLPClassifier(hidden_layer_sizes=(25, 12, 6), max_iter=1000).fit(X_train, y_train)
+
+precision = linear.score(X_test, y_test)
+print(precision)"""
+
+
+
 
